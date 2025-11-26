@@ -1758,7 +1758,7 @@ TOKENS = [
 ]
 
 class ChatApiUser(HttpUser):
-    wait_time = between(1, 3)  # intervalo entre ciclos
+    wait_time = between(5, 10)  # intervalo entre ciclos
 
     @task
     def criar_threads_com_todos(self):
