@@ -1,4 +1,5 @@
 import random
+import gevent
 from locust import HttpUser, task, between
 
 TOKENS = [
@@ -1757,17 +1758,18 @@ TOKENS = [
 ]
 
 class ChatApiUser(HttpUser):
-    wait_time = between(1, 3)  # intervalo entre requisições
-
-    def on_start(self):
-        # Cada usuário pega um token aleatório da lista
-        user = random.choice(TOKENS)
-        self.token = user["accessToken"]
-        self.client.headers.update({"Authorization": f"Bearer {self.token}"})
+    wait_time = between(1, 3)  # intervalo entre ciclos
 
     @task
-    def criar_thread(self):
-        self.client.post("/rag-chat/create-thread-v2")
+    def criar_threads_com_todos(self):
+        # percorre todos os tokens e faz requisição
+        for user in TOKENS:
+            token = user["accessToken"]
+            headers = {"Authorization": f"Bearer {token}"}
+            self.client.post("/rag-chat/create-thread-v2", headers=headers)
+
+        # depois de rodar todos, aguarda um tempo extra para respeitar rate limit
+        gevent.sleep(10)  # espera 10 segundos antes de repetir
 
     # def consultar_historico(self):
     #     self.client.get("/rag-chat/historico/v2", params={"thread_id": "thread_25f587fbd0a1_1764077429"})
