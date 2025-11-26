@@ -1758,18 +1758,15 @@ TOKENS = [
 ]
 
 class ChatApiUser(HttpUser):
-    wait_time = between(5, 10)  # intervalo entre ciclos
+    wait_time = between(60, 90)  # espera longa entre ciclos
 
     @task
     def criar_threads_com_todos(self):
-        # percorre todos os tokens e faz requisição
         for user in TOKENS:
             token = user["accessToken"]
             headers = {"Authorization": f"Bearer {token}"}
             self.client.post("/rag-chat/create-thread-v2", headers=headers)
-
-        # depois de rodar todos, aguarda um tempo extra para respeitar rate limit
-        gevent.sleep(10)  # espera 10 segundos antes de repetir
+            gevent.sleep(5)  # pausa entre cada requisição
 
     # def consultar_historico(self):
     #     self.client.get("/rag-chat/historico/v2", params={"thread_id": "thread_25f587fbd0a1_1764077429"})
